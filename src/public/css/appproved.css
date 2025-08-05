@@ -1,0 +1,39 @@
+.my_attendance_form {
+    width: 100%;
+    height: 100vh;
+    background-color: #eee;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.my_attendance_form_title {
+    width: 60%;
+    margin-top: 7vh;
+    margin-bottom: 4vh;
+    border-left: 5px solid #000;
+    padding-left: 1%;
+}
+
+table {
+    width: 60%;
+    border-collapse: collapse; /* 罫線の重なりを解消 */
+    margin-top: 0vh;
+    background-color: #fff;
+}
+
+tbody th {
+    font-weight:normal;
+}
+th{
+    height: 10vh;
+    text-align: center;
+
+    }
+button {
+    border: none;
+    background-color: #fff;
+    cursor: pointer;
+}
+.first_column_adjust{
+    text-align:left;padding-left:6%;
+}
