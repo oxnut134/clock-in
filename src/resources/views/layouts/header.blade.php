@@ -24,25 +24,24 @@
 
             <img class="clock-in_header_logo" src=" {{ asset('storage/logo.svg')}}" alt="error">
 
-            @if (Auth::check())
+           @if (Auth::check())
             <div class="clock-in_header_button_block" style="width:35%;">
-                <form action="" method="post">
+                <form action="/" method="get">
                     @csrf
                     <button class="clock-header_buttons">勤怠</button>
                 </form>
-                <form action="" method="post">
+                <form action="/attendance/list" method="get">
                     @csrf
                     <button class="clock-header_buttons">勤怠一覧</button>
                 </form>
-                <form action="" method="post">
-                    @csrf
+                <form action="/stamp_correction_request/list/applied" method="get">
                     <button class="clock-header_buttons">申請</button>
                 </form>
                 <form action="{{ route('logout') }}" method="post">
                     @csrf
                     <button class="clock-header_buttons">ログアウト</button>
+                </div>
                 </form>
-            </div>
             @endif
             <meta name="csrf-token" content="{{ csrf_token() }}">
         </header>

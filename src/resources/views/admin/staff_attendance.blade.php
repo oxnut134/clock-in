@@ -1,4 +1,4 @@
-@extends('layouts.header')
+@extends('layouts.header_admin')
 
 @section('css')
 <link rel="stylesheet" href="{{ asset('css/staff_attendance.css') }}">
@@ -16,7 +16,7 @@
                 <col style="width: 30%;">
             </colgroup>
             <tbody>
-                <tr style="border-top: 2px solid #eee;font-weight:normal;">
+                <tr style="height:7vh;border-top: 2px solid #eee;font-weight:normal;">
                     <th >
                         <form style="width:100%;height:100%;display:flex;justify-content:flex-start;align-items:center;">
                             @csrf
@@ -38,7 +38,7 @@
         </table>
         <table>
             <thead>
-                <tr>
+                <tr style="height:5vh;">
                     <th style="width: 25%;">日付</th>
                     <th style="width: 15%;">出勤</th>
                     <th style="width: 15%;">退勤</th>
@@ -48,7 +48,7 @@
                 </tr>
             </thead>
             <tbody>
-                <tr style="border-top: 2px solid #eee;">
+                <tr style="height:5vh;border-top: 2px solid #eee;">
                     <td>06/01(木)</td>
                     <td>09:00</td>
                     <td>18:00</td>

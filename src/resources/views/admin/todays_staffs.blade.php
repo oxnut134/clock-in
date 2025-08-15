@@ -1,4 +1,4 @@
-@extends('layouts.header')
+@extends('layouts.header_admin')
 
 @section('css')
 <link rel="stylesheet" href="{{ asset('css/todays_staffs.css') }}">
@@ -17,19 +17,20 @@
             </colgroup>
             <tbody>
                 <tr style="border-top: 2px solid #eee;font-weight:normal;">
-                    <th >
-                        <form style="width:100%;height:100%;display:flex;justify-content:flex-start;align-items:center;">
+                    <th>
+                        <form style="width:100%;height:100%;display:flex;justify-content:flex-start;align-items:center;" action="/admin/attendances/yesterday" method="post">
                             @csrf
+                            <input type="hidden" name="date" value="{{ $date }}">
                             <button style="padding-left:8%;">← 前日</button>
                         </form>
                     </th>
                     <th>
-                        <input style="border:none;font-size:16px;" aria-checked="" type="date" name="date-picker" value="2023-06-01">
+                        <input style="border:none;font-size:16px;" aria-checked="" type="date" name="date-picker" value="{{ $date }}">
                     </th>
-                    <th >
-                        <form style="width:100%;height:100%;display:flex;justify-content:flex-end;align-items:center;">
+                    <th>
+                        <form style="width:100%;height:100%;display:flex;justify-content:flex-end;align-items:center;" action="/admin/attendances/tomorrow" method="post">
                             @csrf
-                            <button style="padding-right:8%;">翌日 →</button>
+                            <button style=" padding-right:8%;">翌日 →</button>
                         </form>
                     </th>
                     <th></th>
@@ -47,48 +48,33 @@
                     <th style="width: 15%;">詳細</th>
                 </tr>
             </thead>
+            @php
+            use Carbon\Carbon;
+            @endphp
+            @foreach($jobs as $job)
+            @php
+            //dd($job['updated_at']);
+            $job['date'] = Carbon::parse($job['date'])->format('Y/m/d');
+            $job_start = Carbon::parse($job['job_start'])->format('H:i');
+            $job_finish = Carbon::parse($job['job_finish'])->format('H:i');
+            $break_duration = floor($job['break_duration'] / 60) . ':' . str_pad($job['break_duration'] % 60, 2, '0', STR_PAD_LEFT);
+            $job_duration = floor($job['job_duration'] / 60) . ':' . str_pad($job['job_duration'] % 60, 2, '0', STR_PAD_LEFT);
+            @endphp
             <tbody>
                 <tr style="border-top: 2px solid #eee;">
-                    <td>山田 太郎</td>
-                    <td>09:00</td>
-                    <td>18:00</td>
-                    <td>1:00</td>
-                    <td>8:00</td>
+                    <td>{{ $job->user->name ?? '未設定' }}</td>
+                    <td>{{ $job_start }}</td>
+                    <td>{{ $job_finish }}</td>
+                    <td>{{ $break_duration }}</td>
+                    <td>{{ $job_duration }}</td>
                     <td>
-                        <form>
+                        <form action="/admin/attendances/{{ $job['id'] }}" method="get">
                             <button>詳細</button>
                         </form>
                     </td>
                 </tr>
             </tbody>
-            <tbody>
-                <tr style="border-top: 2px solid #eee;">
-                    <td>西 玲奈</td>
-                    <td>09:00</td>
-                    <td>18:00</td>
-                    <td>1:00</td>
-                    <td>8:00</td>
-                    <td>
-                        <form>
-                            <button>詳細</button>
-                        </form>
-                    </td>
-                </tr>
-            </tbody>
-            <tbody>
-                <tr style="border-top: 2px solid #eee;">
-                    <td>秋田 朋美</td>
-                    <td>09:00</td>
-                    <td>18:00</td>
-                    <td>1:00</td>
-                    <td>8:00</td>
-                    <td>
-                        <form>
-                            <button>詳細</button>
-                        </form>
-                    </td>
-                </tr>
-            </tbody>
+            @endforeach
         </table>
     </div>
 </body>

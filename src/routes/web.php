@@ -12,37 +12,7 @@ use Illuminate\Support\Facades\Route;
 | contains the "web" middleware group. Now create something great!
 */
 
-// ****************** スタッフ認証　-**************************
 
-
-use App\Http\Controllers\StaffController;
-// ログイン
-Route::get('/login', function () {
-    return view('auth.login');
-})->name('login');
-Route::post('/login', [StaffController::class, 'login']);
-
-// 会員登録
-Route::get('/register', function () {
-    return view('auth.register');
-})->name('register');
-Route::post('/register', [StaffController::class, 'register']);
-
-// メール認証誘導
-Route::get('/mail/verify/{email}', function ($email) {
-    return view('emails.guide_verification', ['email' => $email]);
-})->name('email.verify');
-
-
-//------------- ミドルウェア　Auth　によるスタッフ登録認証 -------------------
-
-Route::middleware('auth')->group(function () {
-
-    Route::get('/', function () {
-        return view('welcome');
-    })->name('staff.home');
-
-});
 
 //--------------------  メール認証機能　カスタマイズ　----------------------------
 
@@ -103,9 +73,75 @@ if (Features::enabled(Features::emailVerification())) {
     })->name('verification.send');
 }
 
-//************************** 管理者認証 *******************************
+
+// ****************** スタッフ認証　*****************************
+
+
+use App\Http\Controllers\StaffController;
+// ログイン
+Route::get('/login', function () {
+    return view('auth.login');
+})->name('login');
+Route::post('/login', [StaffController::class, 'login']);
+
+// 会員登録
+Route::get('/register', function () {
+    return view('auth.register');
+})->name('register');
+Route::post('/register', [StaffController::class, 'register']);
+
+// メール認証誘導
+Route::get('/mail/verify/{email}', function ($email) {
+    return view('emails.guide_verification', ['email' => $email]);
+})->name('email.verify');
+
+
+
+//*************** スタッフ登録認証 ***********************
+use App\Http\Controllers\MyAttendanceController;
+use App\Http\Controllers\ScheduleAdjustController;
+
+Route::middleware('auth')->group(function () {
+
+    /*Route::get('/', function () {
+        return view('welcome');
+    })->name('staff.home');*/
+
+    //});
+
+    // ***************** Staff Routines **************************
+
+    // ----------------- Clock in ------------------------
+
+
+    Route::get('/', [MyAttendanceController::class, 'showClockIn'])->name('staff.home');
+    Route::post('/', [MyAttendanceController::class, 'putClockIn']);
+    Route::post('/clock/break', [MyAttendanceController::class, 'putClockBreak']);
+    Route::post('/clock/return', [MyAttendanceController::class, 'putClockReturn']);
+    Route::post('/clock/out', [MyAttendanceController::class, 'putClockOut']);
+
+    //---------------- 勤怠一覧　-----------------------------
+
+    Route::get('/attendance/list', [MyAttendanceController::class, 'getMyList'])->name('attendance.list');
+    Route::post('attendance/last_month', [MyAttendanceController::class, 'showLastMonth'])->name('attendance.last_month');
+    Route::post('attendance/next_month', [MyAttendanceController::class, 'showNextMonth'])->name('attendance.next_month');
+
+
+    Route::get('/attendance/detail/{id}', [ScheduleAdjustController::class, 'getMyDetail'])->name('attendance.detail');
+    Route::post('/apply', [ScheduleAdjustController::class, 'applyNewSchedule'])->name('apply');
+
+    //-------------- 申請一覧　-----------------------
+
+    Route::get('/stamp_correction_request/list/{param}', [ScheduleAdjustController::class, 'getMytApplyList'])->name('stamp_correction_request.list');
+});
+
+
+
+//*************************** 管理者認証 *******************************
 
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\AdminAttendanceController;
+use App\Http\Controllers\AdminScheduleAdjustController;
 
 // 管理者ログイン
 Route::get('/admin/login', function () {
@@ -113,23 +149,45 @@ Route::get('/admin/login', function () {
 })->name('admin.login');
 Route::post('/admin/login', [AdminController::class, 'login']);
 
-Route::get('/admin/home', function () {
+/*Route::get('/admin/home', function () {
     return view('welcome');
-})->name('admin.home');
+})->name('admin.home');*/
 
-//------------- ミドルウェア　guest:admin　による管理者登録認証 -------------------
+//***************** 管理者登録認証  ミドルウェア　guest:admin　による **************
 //Auth:admin適用
 Route::middleware('guest:admin')->group(function () {
 
     Route::get('/admin', function () {
         return view('welcome');
-    });//->name('admin.home');
-
+    })->name('admin.home');
 });
 
-//---------------------　--------------------------------------
-Route::post('/admin/logout', [AdminController::class, 'logout'])->name('admin.logout');
+//---------------------　admin logout--------------------------------------
+Route::post('/admin/logout', [AdminController::class, 'logout'])
+    ->name('admin.logout');
 
+
+// ******************** Admin Routines *************************
+
+//--------------- 勤怠一覧（管理者）--------------------------
+
+Route::get('/admin/attendances', [AdminAttendanceController::class, 'getTodaysStaff'])->name('admin.attendances');
+Route::post('/admin/attendances/yesterday', [AdminAttendanceController::class, 'getYesterdaysStaff'])->name('admin.attendances/yesterday');
+Route::post('/admin/attendances/tomorrow', [AdminAttendanceController::class, 'getTomorrowsStaff'])->name('admin.attendances/tomorrow');
+
+//--------------- 勤怠詳細（管理者）----------------------------
+
+Route::get('admin/attendances/{id}', [AdminScheduleAdjustController::class, 'getMyDetail'])->name('attendance.detail');
+Route::post('/admin/apply', [AdminScheduleAdjustController::class, 'applyNewSchedule'])->name('admin.apply');
+
+//---------------- スタッフ一覧（管理者）-----------------------------
+
+Route::get('/admin/users', [AdminAttendanceController::class, 'getStaffs'])->name('admin.users');
+
+
+
+
+/*
 //----------------- for making views ------------------
 Route::get('/clock_in', function (){
     return view('/staff/clock_in');
@@ -175,7 +233,9 @@ Route::get('/approve', function (){
 });
 Route::get('/approved', function (){
     return view('/admin/approved');
-});
+});*/
+
+
 /*
 Route::get('/', function () {
     return view('welcome');

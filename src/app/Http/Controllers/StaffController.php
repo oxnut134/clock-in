@@ -14,7 +14,7 @@ class StaffController extends Controller
     {
         $credentials = $request->only('email', 'password');
 
-        $user = \App\Models\User::where('email', $request->email)->first();
+        $user = User::where('email', $request->email)->first();
 
         // メール認証チェック
         if ($user && !$user->email_verified_at) {
@@ -22,7 +22,8 @@ class StaffController extends Controller
         }
 
         if (Auth::attempt($credentials)) {
-            return view('welcome');
+            return redirect()->route('staff.home');
+            //            return view('welcome');
         }
 
         return back()->withErrors(['email' => 'ログイン情報が登録されていません']);

@@ -24,14 +24,13 @@
 
             <img class="clock-in_header_logo" src=" {{ asset('storage/logo.svg')}}" alt="error">
 
-            @if (Auth::guard('admin')->check())
+            {{-- @if (Auth::guard('admin')->check()) --}}
             <div class="clock-in_header_button_block" style="width:45%;">
                 <form action="" method="post">
                     @csrf
                     <button class="clock-header_buttons">勤怠一覧</button>
                 </form>
-                <form action="" method="post">
-                    @csrf
+                <form action="/admin/users" method="get">
                     <button class="clock-header_buttons">スタッフ一覧</button>
                 </form>
                 <form action="" method="post">
@@ -43,7 +42,7 @@
                     <button class="clock-header_buttons">ログアウト</button>
                 </form>
             </div>
-            @endif
+            {{-- @endif--}}
             <meta name="csrf-token" content="{{ csrf_token() }}">
         </header>
         <main>

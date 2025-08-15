@@ -16,8 +16,7 @@
 
 table {
     width: 65%;
-    height: 5vh;
-    border-collapse: collapse; /* 罫線の重なりを解消 */
+    border-collapse: collapse;  /*罫線の重なりを解消*/
     margin-bottom: 2vh;
     background-color: #fff;
 }
