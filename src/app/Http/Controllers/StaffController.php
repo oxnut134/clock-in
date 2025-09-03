@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\Request;
+
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Models\User;
@@ -16,12 +18,13 @@ class StaffController extends Controller
 
         $user = User::where('email', $request->email)->first();
 
-        // メール認証チェック
+        // メール認証登録チェック
         if ($user && !$user->email_verified_at) {
-            return back()->withErrors(['email' => 'メール認証が完了していません。認証メールを確認してください。']);
+            return back()->withErrors(['email' => 'メール認証登録が完了していません。認証メールを確認してください。']);
         }
 
         if (Auth::attempt($credentials)) {
+
             return redirect()->route('staff.home');
             //            return view('welcome');
         }
@@ -29,7 +32,7 @@ class StaffController extends Controller
         return back()->withErrors(['email' => 'ログイン情報が登録されていません']);
     }
 
-        public function register(RegisterRequest $request)
+    public function register(RegisterRequest $request)
     {
         //dd($request);
         $user = User::create([
@@ -39,20 +42,24 @@ class StaffController extends Controller
             'password_confirmation' => Hash::make($request->password_confirmation),
         ]);
 
-          // Fortifyの認証メールを送信
+        // Fortifyの認証メールを送信
         if (method_exists($user, 'sendEmailVerificationNotification')) {
             $user->sendEmailVerificationNotification();
-            //認証メールフォーム：/Notificatipns/CustomVerifyEmail.php
+            //認証メールフォーム：/Notifications/CustomVerifyEmail.php
         }
 
         // 登録完了後のリダイレクト
-        return redirect()->route('email.verify',[
-            'email'=>$request->email
+        return redirect()->route('email.verify', [
+            'email' => $request->email
         ]);
-
-
-
     }
+    public function logout(Request $request)
+    {
+        Auth::guard('web')->logout();
 
+        $request->session()->invalidate();
+        $request->session()->regenerateToken(); 
+
+        return redirect()->route('login');
+    }
 }
-

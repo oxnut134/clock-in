@@ -8,13 +8,12 @@
 
 <body>
     <div class="clock_common_form">
-        <div class="clock_common_form_status">勤務中</div>
+        <div class="clock_common_form_status">出勤中</div>
         <div class="clock_common_form_date">{{ $date.$dayOfWeek}}</div>
         <h1 class="clock_common_form_time">{{ $time }}</h1>
         <div style="width:25%;display:flex;justify-content:space-between">
             <form style="width:100%;" action="/clock/out" method="post" onsubmit="return preventMultipleClicks(this)">
                 @csrf
-
                 <input type="hidden" name="date" value="{{ $date }}">
                 <input type="hidden" name="dayOfWeek" value="{{ $dayOfWeek }}">
                 <input type="hidden" name="time" value="{{ $time }}">

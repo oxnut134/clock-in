@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\DB;
 
 use Carbon\Carbon;
 
-class BreakTableSeeder extends Seeder
+class BreaksTableSeeder extends Seeder
 {
     /**
      * Run the database seeds.

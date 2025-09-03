@@ -21,9 +21,9 @@ services:
         image: mysql:8.0.26
         environment:
             MYSQL_ROOT_PASSWORD: root
-            MYSQL_DATABASE: laravel_db
-            MYSQL_USER: laravel_user
-            MYSQL_PASSWORD: laravel_pass
+            MYSQL_DATABASE: clock_test
+            MYSQL_USER: root
+            MYSQL_PASSWORD: root
         command:
             mysqld --default-authentication-plugin=mysql_native_password
         volumes:
@@ -35,8 +35,8 @@ services:
         environment:
             - PMA_ARBITRARY=1
             - PMA_HOST=mysql
-            - PMA_USER=laravel_user
-            - PMA_PASSWORD=laravel_pass
+            - PMA_USER=root
+            - PMA_PASSWORD=root
 
         depends_on:
             - mysql

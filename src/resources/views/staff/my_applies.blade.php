@@ -6,7 +6,7 @@
 
 @section('content')
 
-<body>
+<body style="background-color:#eee;">
     <div class="my_applies_form">
         <h3 class="my_applies_form_title">申請一覧</h3>
         <table>

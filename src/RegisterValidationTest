@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="" tests="3" assertions="4" errors="0" warnings="0" failures="0" skipped="0" time="12.060329">
+    <testsuite name="Unit" tests="1" assertions="1" errors="0" warnings="0" failures="0" skipped="0" time="0.171522">
+      <testsuite name="Tests\Unit\ExampleTest" file="/var/www/tests/Unit/ExampleTest.php" tests="1" assertions="1" errors="0" warnings="0" failures="0" skipped="0" time="0.171522">
+        <testcase name="test_example" class="Tests\Unit\ExampleTest" classname="Tests.Unit.ExampleTest" file="/var/www/tests/Unit/ExampleTest.php" line="14" assertions="1" time="0.171522"/>
+      </testsuite>
+    </testsuite>
+    <testsuite name="Feature" tests="2" assertions="3" errors="0" warnings="0" failures="0" skipped="0" time="11.888807">
+      <testsuite name="Tests\Feature\ExampleTest" file="/var/www/tests/Feature/ExampleTest.php" tests="1" assertions="1" errors="0" warnings="0" failures="0" skipped="0" time="7.117698">
+        <testcase name="test_example" class="Tests\Feature\ExampleTest" classname="Tests.Feature.ExampleTest" file="/var/www/tests/Feature/ExampleTest.php" line="15" assertions="1" time="7.117698"/>
+      </testsuite>
+      <testsuite name="Tests\Feature\RegisterValidationTest" file="/var/www/tests/Feature/RegisterValidationTest.php" tests="1" assertions="2" errors="0" warnings="0" failures="0" skipped="0" time="4.771109">
+        <testcase name="test_register_validation" class="Tests\Feature\RegisterValidationTest" classname="Tests.Feature.RegisterValidationTest" file="/var/www/tests/Feature/RegisterValidationTest.php" line="29" assertions="2" time="4.771109"/>
+      </testsuite>
+    </testsuite>
+  </testsuite>
+</testsuites>

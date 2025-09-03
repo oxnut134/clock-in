@@ -36,7 +36,7 @@ class BreakTime extends Model
         $this->break_start = $start;
         $this->save();
     }
-    
+
     public function updateFinish( $finish)
     {
 //dd($finish);

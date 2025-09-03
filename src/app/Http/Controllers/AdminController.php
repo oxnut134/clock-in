@@ -14,20 +14,20 @@ class AdminController extends Controller
         $credentials = $request->only('email', 'password');
 
         if (Auth::guard('admin')->attempt($credentials)) {
-            //return view('wellcome');
+
+            $microtime = microtime(true);
+
             return redirect()->route('admin.home'); // 管理者専用のホーム画面にリダイレクト
         }
-//dd('ログイン失敗: ', $credentials);
         return back()->withErrors(['email' => 'ログイン情報が登録されていません']);
     }
     public function logout(Request $request)
-{
-    Auth::guard('admin')->logout();
-    $request->session()->invalidate();
-    $request->session()->regenerateToken();
+    {
+        Auth::guard('admin')->logout();
 
-    return redirect()->route('admin.login');
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('admin.login');
+    }
 }
-
-}
-

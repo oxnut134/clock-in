@@ -6,7 +6,7 @@
 
 @section('content')
 
-<body>
+<body style="background-color:#eee;">
     <div class="my_attendance_form">
         <h3 class="my_attendance_form_title">勤怠一覧</h3>
         <table>
@@ -62,29 +62,19 @@
                         @if($job['job_finish']){{ \Carbon\Carbon::parse($job['job_finish'])->format('H:i') }}@else @endif
                     </td>
                     <td>
+                        @if($job['break_duration']!=0)
                         {{ floor($job['break_duration'] / 60) }}:{{ str_pad($job['break_duration'] % 60, 2, '0', STR_PAD_LEFT) }}
+                        @endif
                     </td>
                     <td>
+                        @if($job['job_duration']!=0)
                         {{ floor($job['job_duration'] / 60) }}:{{ str_pad($job['job_duration'] % 60, 2, '0', STR_PAD_LEFT) }}
+                        @endif
                     </td>
                     <td>
                         <a style="text-decoration:none;color:#000;" href=" /attendance/detail/{{ $job['id'] }} ">詳細</a>
                     </td>
                 </tr>
-
-                <!--              <tr style="height:5vh;border-top: 2px solid #eee;">
-                    <td>{{ $job['date'].$job['day_of_week']}}</td>
-                    <td>{{ $job['job_start'] }}</td>
-                    <td>{{ $job['job_finish'] }}</td>
-                    <td>{{ $job['break_duration'] }}</td>
-                    <td>{{ $job['job_duration'] }}</td>
-                    <td>
-                        <form>
-                            <button>詳細</button>
-                        </form>
-                    </td>
-                </tr>
--->
             </tbody>
             @endforeach
         </table>

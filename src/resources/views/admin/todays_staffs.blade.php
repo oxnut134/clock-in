@@ -6,9 +6,14 @@
 
 @section('content')
 
-<body>
+<body style="background-color:#eee;">
     <div class="todays_staffs_form">
-        <h3 class="todays_staffs_form_title">申請一覧</h3>
+        @php
+        $date_title = \Carbon\Carbon::createFromFormat('Y-m-d', $date)->format('Y年n月j日');
+        @endphp
+        <h3 class="todays_staffs_form_title">
+            {{ $date_title }} の勤怠
+        </h3>
         <table class="todays_staffs_form_this_month_block">
             <colgroup>
                 <col style="width: 30%;">
@@ -30,6 +35,7 @@
                     <th>
                         <form style="width:100%;height:100%;display:flex;justify-content:flex-end;align-items:center;" action="/admin/attendances/tomorrow" method="post">
                             @csrf
+                            <input type="hidden" name="date" value="{{ $date }}">
                             <button style=" padding-right:8%;">翌日 →</button>
                         </form>
                     </th>
@@ -53,10 +59,9 @@
             @endphp
             @foreach($jobs as $job)
             @php
-            //dd($job['updated_at']);
             $job['date'] = Carbon::parse($job['date'])->format('Y/m/d');
-            $job_start = Carbon::parse($job['job_start'])->format('H:i');
-            $job_finish = Carbon::parse($job['job_finish'])->format('H:i');
+            $job_start = $job->job_start ? Carbon::parse($job['job_start'])->format('H:i') : null;
+            $job_finish = $job->job_finish ? Carbon::parse($job['job_finish'])->format('H:i') : null;
             $break_duration = floor($job['break_duration'] / 60) . ':' . str_pad($job['break_duration'] % 60, 2, '0', STR_PAD_LEFT);
             $job_duration = floor($job['job_duration'] / 60) . ':' . str_pad($job['job_duration'] % 60, 2, '0', STR_PAD_LEFT);
             @endphp
@@ -65,8 +70,16 @@
                     <td>{{ $job->user->name ?? '未設定' }}</td>
                     <td>{{ $job_start }}</td>
                     <td>{{ $job_finish }}</td>
-                    <td>{{ $break_duration }}</td>
-                    <td>{{ $job_duration }}</td>
+                    <td>
+                        @if($job['break_duration']!=0)
+                        {{ $break_duration }}
+                        @endif
+                    </td>
+                    <td>
+                        @if($job['break_duration']!=0)
+                        {{ $job_duration }}
+                        @endif
+                    </td>
                     <td>
                         <form action="/admin/attendances/{{ $job['id'] }}" method="get">
                             <button>詳細</button>

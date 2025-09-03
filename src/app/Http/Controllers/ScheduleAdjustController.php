@@ -2,13 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Job;
 use App\Models\BreakTime;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
-
+use App\Http\Requests\MyDetailRequest;
 
 
 class ScheduleAdjustController extends Controller
@@ -25,7 +24,6 @@ class ScheduleAdjustController extends Controller
 
         $breakTimes = $job->breakTime;
 
-        //dd($job, $breakTimes);
         return view('/staff/my_detail', [
             'name' => $name,
             'job' => $job,
@@ -37,14 +35,16 @@ class ScheduleAdjustController extends Controller
             'job_id' => $job->id,
         ]);
     }
-    public function applyNewSchedule(Request $request)
+    public function applyNewSchedule(MyDetailRequest $request)
     {
-        //dd($request);
-
         //idでjobインスタンス取得
         $job = Job::where('id', $request->id)->first();
         $job->job_start = Carbon::createFromFormat('H:i:s', $job->job_start)->format('H:i');
-        $job->job_finish = Carbon::createFromFormat('H:i:s', $job->job_finish)->format('H:i');
+        if ($job->job_finish != null) {
+            $job->job_finish = Carbon::createFromFormat('H:i:s', $job->job_finish)->format('H:i');
+        }else{
+            $job->job_finish = null;
+        }
 
         // 更新前データ取得
         $originalValuesJob = [
@@ -75,52 +75,53 @@ class ScheduleAdjustController extends Controller
         }
 
         // 変更あればjob_statusをapplied
-        if ($hasChanges && $job->job_status != "approved") {
-            //$job->update(array_merge($newValuesJob, ['job_status' => 'applied']));
+        if ($hasChanges ) {
             $job->updateStatus("applied");
         }
 
 
 
         $breakTimes = $request->breakTimes;
-        foreach ($breakTimes as $breakTimeTemp) {
+        if ($breakTimes != null) {
 
-            //idでbreakTimeインスタンス取得
-            $breakTime = BreakTime::where('id', $breakTimeTemp['break_id'])->first();
+            foreach ($breakTimes as $breakTimeTemp) {
 
-
-
-            // 更新前データ取得
-            $originalValues = [
-                'break_start' => $breakTime->break_start,
-                'break_finish' => $breakTime->break_finish,
-            ];
+                //idでbreakTimeインスタンス取得
+                $breakTime = BreakTime::where('id', $breakTimeTemp['break_id'])->first();
 
 
-            // テーブル保存
-            $breakTime->updateStart($breakTimeTemp['break_start']);
-            $breakTime->updateFinish($breakTimeTemp['break_finish']);
+
+                // 更新前データ取得
+                $originalValues = [
+                    'break_start' => $breakTime->break_start,
+                    'break_finish' => $breakTime->break_finish,
+                ];
 
 
-            // 更新後データ取得
-            $newValues = [
-                'break_start' => $breakTimeTemp['break_start'],
-                'break_finish' => $breakTimeTemp['break_finish'],
-            ];
+                // テーブル保存
+                $breakTime->updateStart($breakTimeTemp['break_start']);
+                $breakTime->updateFinish($breakTimeTemp['break_finish']);
 
-            // 変更チェック
-            $hasChanges = false;
-            foreach ($originalValues as $field => $oldValue) {
-                if ($oldValue != $newValues[$field]) {
-                    $hasChanges = true;
-                    break; // 1つでも変更があればループを抜ける
+
+                // 更新後データ取得
+                $newValues = [
+                    'break_start' => $breakTimeTemp['break_start'],
+                    'break_finish' => $breakTimeTemp['break_finish'],
+                ];
+
+                // 変更チェック
+                $hasChanges = false;
+                foreach ($originalValues as $field => $oldValue) {
+                    if ($oldValue != $newValues[$field]) {
+                        $hasChanges = true;
+                        break; // 1つでも変更があればループを抜ける
+                    }
                 }
-            }
 
-            // 変更あればbreak_statusをapplied
-            if ($hasChanges && $job->break_status != "approved") {
-                //$breakTime->update(array_merge($newValues, ['break_status' => 'applied']));
-                $job->updateStatus("applied");
+                // 変更あればbreak_statusをapplied
+                if ($hasChanges && $job->break_status != "approved") {
+                    $job->updateStatus("applied");
+                }
             }
         }
         return redirect()->route('attendance.list');

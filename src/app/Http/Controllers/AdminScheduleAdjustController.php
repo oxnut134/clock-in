@@ -8,11 +8,12 @@ use App\Models\Job;
 use App\Models\BreakTime;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
+use App\Http\Requests\AdminStaffDetailRequest;
 
 
 class AdminScheduleAdjustController extends Controller
 {
-    public function getMyDetail($id)
+    public function getTodaysStaffDetail($id)
     {
         $job = Job::find($id);
         $userId = $job->user_id; //パラメータより取得
@@ -29,8 +30,6 @@ class AdminScheduleAdjustController extends Controller
         $remark = $job->remark;
 
         $breakTimes = $job->breakTime;
-
-        //dd($job, $breakTimes);
         return view('/admin/todays_staff_detail', [
             'name' => $name,
             'job' => $job,
@@ -42,13 +41,16 @@ class AdminScheduleAdjustController extends Controller
             'job_id' => $job->id,
         ]);
     }
-    public function applyNewSchedule(Request $request)
+    public function applyNewSchedule(AdminStaffDetailRequest $request)
     {
-
         //idでjobインスタンス取得
         $job = Job::where('id', $request->id)->first();
         $job->job_start = Carbon::createFromFormat('H:i:s', $job->job_start)->format('H:i');
-        $job->job_finish = Carbon::createFromFormat('H:i:s', $job->job_finish)->format('H:i');
+        if ($job->job_finish != null) {
+            $job->job_finish = Carbon::createFromFormat('H:i:s',  $job->job_finish)->format('H:i');
+        } else {
+            $job->job_finish = null;
+        }
         // 更新前データ取得
 
         $originalValuesJob = [
@@ -68,9 +70,8 @@ class AdminScheduleAdjustController extends Controller
             'job_finish' => $request->job_finish,
             'remark' => $request->remark,
         ];
-        //dd($job->job_start, $job->job_finish);
-        // 変更チェック
 
+        // 変更チェック
         $hasChanges = false;
         foreach ($originalValuesJob as $field => $oldValue) {
             if ($oldValue != $newValuesJob[$field]) {
@@ -80,90 +81,122 @@ class AdminScheduleAdjustController extends Controller
         }
 
         // 変更あればjob_statusをapplied
-        if ($hasChanges && $job->job_status != "approved") {
-            //      $job->update(array_merge($newValuesJob, ['job_status' => 'applied']));
+        if ($hasChanges) {
             $job->updateStatus("applied");
         }
 
-
         $breakTimes = $request->breakTimes;
-        foreach ($breakTimes as $breakTimeTemp) {
+        if ($breakTimes != null) {
+            foreach ($breakTimes as $breakTimeTemp) {
 
-            //idでbreakTimeインスタンス取得
-            $breakTime = BreakTime::where('id', $breakTimeTemp['break_id'])->first();
-            $breakTime->break_start = Carbon::createFromFormat('H:i:s', $breakTime->break_start)->format('H:i');
-            $breakTime->break_finish = Carbon::createFromFormat('H:i:s', $breakTime->break_finish)->format('H:i');
-
-
-
-            // 更新前データ取得
-            $originalValues = [
-                'break_start' => $breakTime->break_start,
-                'break_finish' => $breakTime->break_finish,
-            ];
+                //idでbreakTimeインスタンス取得
+                $breakTime = BreakTime::where('id', $breakTimeTemp['break_id'])->first();
+                $breakTime->break_start = Carbon::createFromFormat('H:i:s', $breakTime->break_start)->format('H:i');
+                $breakTime->break_finish = Carbon::createFromFormat('H:i:s', $breakTime->break_finish)->format('H:i');
 
 
-            // テーブル保存
-            $breakTime->updateStart($breakTimeTemp['break_start']);
-            $breakTime->updateFinish($breakTimeTemp['break_finish']);
+
+                // 更新前データ取得
+                $originalValues = [
+                    'break_start' => $breakTime->break_start,
+                    'break_finish' => $breakTime->break_finish,
+                ];
 
 
-            // 更新後データ取得
-            $newValues = [
-                'break_start' => $breakTimeTemp['break_start'],
-                'break_finish' => $breakTimeTemp['break_finish'],
-            ];
+                // テーブル保存
+                $breakTime->updateStart($breakTimeTemp['break_start']);
+                $breakTime->updateFinish($breakTimeTemp['break_finish']);
 
 
-            // 変更チェック
-            $hasChanges = false;
-            foreach ($originalValues as $field => $oldValue) {
-                if ($oldValue != $newValues[$field]) {
-                    $hasChanges = true;
-                    break; // 1つでも変更があればループを抜ける
+                // 更新後データ取得
+                $newValues = [
+                    'break_start' => $breakTimeTemp['break_start'],
+                    'break_finish' => $breakTimeTemp['break_finish'],
+                ];
+
+
+                // 変更チェック
+                $hasChanges = false;
+                foreach ($originalValues as $field => $oldValue) {
+                    if ($oldValue != $newValues[$field]) {
+                        $hasChanges = true;
+                        break; // 1つでも変更があればループを抜ける
+                    }
                 }
-            }
 
-            // 変更あればbreak_statusをapplied
-            if ($hasChanges && $job->break_status != "approved") {
-                //                $breakTime->update(array_merge($newValues, ['break_status' => 'applied']));
+                // 変更あればbreak_statusをapplied
+                if ($hasChanges && $job->break_status != "approved") {
 
-                $job->updateStatus("applied");
+                    $job->updateStatus("applied");
+                }
             }
         }
         return redirect()->route('admin.attendances');
     }
-    public function getMytApplyList($param)
+    public function getStaffApplyList(Request $request)
     {
-        $auth_id = Auth::id();
-        $user = User::find($auth_id);
-
+       $param = $request->query('param');
         switch ($param) {
             case 'applied':
-                $appliedJobs = Job::where('user_id', $auth_id)
-                    ->where('job_status', "applied")->get();
-                return view('/staff/my_applies', [
+                $appliedJobs = Job::where('job_status', "applied")
+                    ->with('user')->get();
+                return view('/admin/staff_applies', [
                     'jobs' => $appliedJobs,
-                    'user' => $user,
                     'status' => "承認待ち"
                 ]);
             case 'approved':
-                $approvedJobs = Job::where('user_id', $auth_id)
-                    ->where('job_status', "approved")->get();
-                return view('/staff/my_applies', [
+                $approvedJobs = Job::where('job_status', "approved")
+                    ->with('user')->get();
+                return view('/admin/staff_applies', [
                     'jobs' => $approvedJobs,
-                    'user' => $user,
                     'status' => "承認済み"
                 ]);
 
             default:
-                $appliedJobs = Job::where('user_id', $auth_id)
-                    ->where('job_status', "applied")->get();
-                return view('/staff/my_applies', [
+                $appliedJobs = Job::where('job_status', "dummy")
+                    ->with('user')->get();
+                return view('/admin/staff_applies', [
                     'jobs' => $appliedJobs,
-                    'user' => $user,
                     'status' => "承認待ち"
                 ]);
         }
+    }
+    public function showStaffApplyDetail($id)
+    {
+
+        $job = Job::find($id);
+        $userId = $job->user_id; //パラメータより取得
+
+        $user = User::find($userId);
+        $name = $user->name;
+        $date = $job->date;
+        $job = Job::where('date', $date)
+            ->where('user_id', $userId)
+            ->first();
+        $date = $job->date;
+        $jobStart = $job->job_start;
+        $jobFinish = $job->job_finish;
+        $remark = $job->remark;
+
+        $breakTimes = $job->breakTime;
+
+        return view('/admin/approve', [
+            'name' => $name,
+            'job' => $job,
+            'date' => $date,
+            'job_start' => $jobStart,
+            'job_finish' => $jobFinish,
+            'remark' => $remark,
+            'breakTimes' => $breakTimes,
+            'job_id' => $job->id,
+        ]);
+    }
+    public function approveNewSchedule(Request $request)
+    {
+
+        $job = Job::find($request->job_id);
+        $job->updateStatus("approved");
+
+        return redirect()->route('admin.requests', ['param' => 'approved']);
     }
 }

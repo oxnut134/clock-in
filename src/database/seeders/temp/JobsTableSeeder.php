@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\DB;
 
 use Carbon\Carbon;
 
-class JobTableSeeder extends Seeder
+class JobsTableSeeder extends Seeder
 {
     /**
      * Run the database seeds.

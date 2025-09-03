@@ -6,7 +6,7 @@
 
 @section('content')
 
-<body>
+<body style="background-color:#eee;">
     <div class="todays_staffs_form">
         <h3 class="todays_staffs_form_title" >スタッフ一覧</h3>
         <div style="height:7vh;"></div>
@@ -27,7 +27,7 @@
                     <td>{{ $staff['name'] }}</td>
                     <td>{{ $staff['email'] }}</td>
                     <td >
-                        <form>
+                        <form action="/admin/users/{{ $staff['id'] }}/attendances" method="get">
                             <button>詳細</button>
                         </form>
                     </td>

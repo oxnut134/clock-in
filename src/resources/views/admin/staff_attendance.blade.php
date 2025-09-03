@@ -6,10 +6,10 @@
 
 @section('content')
 
-<body>
+<body style="background-color:#eee;">
     <div class="my_attendance_form">
-        <h3 class="my_attendance_form_title">西玲奈さんの勤怠</h3>
-       <table >
+        <h3 class="my_attendance_form_title">{{ $user_name }} さんの勤怠</h3>
+        <table>
             <colgroup>
                 <col style="width: 30%;">
                 <col style="width: 40%;">
@@ -17,18 +17,22 @@
             </colgroup>
             <tbody>
                 <tr style="height:7vh;border-top: 2px solid #eee;font-weight:normal;">
-                    <th >
-                        <form style="width:100%;height:100%;display:flex;justify-content:flex-start;align-items:center;">
+                    <th>
+                        <form style="width:100%;height:100%;display:flex;justify-content:flex-start;align-items:center;" action="/admin/users/attendances/last_month" method="post">
                             @csrf
+                            <input type="hidden" name="currentDateTime" value="{{ $currentDateTime }}">
+                            <input type="hidden" name="user" value="{{ $user }}">
                             <button style="padding-left:8%;">← 前月</button>
                         </form>
                     </th>
                     <th>
-                        <input style="border:none;font-size:16px;" aria-checked="" type="month" name="date-picker" value="2023-06">
+                        <input style="border:none;font-size:16px;" type="month" name="date-picker" value="{{ $this_year_month }}">
                     </th>
-                    <th >
-                        <form style="width:100%;height:100%;display:flex;justify-content:flex-end;align-items:center;">
+                    <th>
+                        <form style="width:100%;height:100%;display:flex;justify-content:flex-end;align-items:center;" action="/admin/users/attendances/next_month" method="post">
                             @csrf
+                            <input type="hidden" name="currentDateTime" value="{{ $currentDateTime }}">
+                            <input type="hidden" name="user" value="{{ $user }}">
                             <button style="padding-right:8%;">翌月 →</button>
                         </form>
                     </th>
@@ -37,8 +41,8 @@
             </tbody>
         </table>
         <table>
-            <thead>
-                <tr style="height:5vh;">
+            <thead style="height:5vh;">
+                <tr>
                     <th style="width: 25%;">日付</th>
                     <th style="width: 15%;">出勤</th>
                     <th style="width: 15%;">退勤</th>
@@ -47,56 +51,45 @@
                     <th style="width: 15%;">詳細</th>
                 </tr>
             </thead>
+            @foreach($jobs as $job)
             <tbody>
-                <tr style="height:5vh;border-top: 2px solid #eee;">
-                    <td>06/01(木)</td>
-                    <td>09:00</td>
-                    <td>18:00</td>
-                    <td>1:00</td>
-                    <td>8:00</td>
+                <tr style="height:5vh; border-top: 2px solid #eee;">
                     <td>
-                        <form>
-                            <button>詳細</button>
-                        </form>
+                        {{ \Carbon\Carbon::parse($job['date'])->format('m/d') }} ({{ \Carbon\Carbon::parse($job['date'])->isoFormat('ddd') }})
+                    </td>
+                    <td>
+                        @if($job['job_start']){{ \Carbon\Carbon::parse($job['job_start'])->format('H:i') }}@else @endif
+                    </td>
+                    <td>
+                        @if($job['job_finish']){{ \Carbon\Carbon::parse($job['job_finish'])->format('H:i') }}@else @endif
+                    </td>
+                    <td>
+                        @if($job['break_duration']!=0)
+                        {{ floor($job['break_duration'] / 60) }}:{{ str_pad($job['break_duration'] % 60, 2, '0', STR_PAD_LEFT) }}
+                        @endif
+                    </td>
+                    <td>
+                        @if($job['job_duration']!=0)
+                        {{ floor($job['job_duration'] / 60) }}:{{ str_pad($job['job_duration'] % 60, 2, '0', STR_PAD_LEFT) }}
+                        @endif
+                    </td>
+                    <td>
+                        <a style="text-decoration:none;color:#000;" href="/admin/attendances/{{ $job['id'] }}">詳細</a>
                     </td>
                 </tr>
             </tbody>
-            <tbody>
-                <tr style="border-top: 2px solid #eee;">
-                    <td>06/01(木)</td>
-                    <td>09:00</td>
-                    <td>18:00</td>
-                    <td>1:00</td>
-                    <td>8:00</td>
-                    <td>
-                        <form>
-                            <button>詳細</button>
-                        </form>
-                    </td>
-                </tr>
-            </tbody>
-            <tbody>
-                <tr style="border-top: 2px solid #eee;">
-                    <td>06/01(木)</td>
-                    <td>09:00</td>
-                    <td>18:00</td>
-                    <td>1:00</td>
-                    <td>8:00</td>
-                    <td>
-                        <form>
-                            <button>詳細</button>
-                        </form>
-                    </td>
-                </tr>
-            </tbody>
+            @endforeach
         </table>
-                <div style="width:65%;height:10vh;">
-            <form style="width:100%;height:100%;display:flex;justify-content:flex-end;align-items:flex-end;">
+        <div style="width:100%;height:20vh;display:flex;justify-content:center;align-items:center;">
+            <form action="{{ route('admin.users.attendance.download') }}" method="post" style="width:65%;height:10vh;display:flex;justify-content:flex-end;align-items:center;">
                 @csrf
-                <button style="width:15%;height:5vh;border-radius:5px;background-color:#000;color:#fff;">ＣＳＶ出力</button>
+                <input type="hidden" name="user" value="{{ $user }}">
+                <input type="hidden" name="thisYearMonth" value="{{ $this_year_month }}">
+                <button type="submit" style="padding: 10px 20px; background-color: #000; color: white; border: none; border-radius: 5px;  letter-spacing:3px;">
+                    CSV出力
+                </button>
             </form>
         </div>
-
     </div>
 </body>
 

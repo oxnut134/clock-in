@@ -33,7 +33,7 @@ class RedirectIfAuthenticated
 
     public function handle($request, Closure $next, ...$guards)
     {
-
+        //dd($guards);
         foreach ($guards as $guard) {
             //dd(Auth::guard($guard)->check());
             if (Auth::guard($guard)->check()) {

@@ -6,18 +6,18 @@
 
 @section('content')
 
-<body>
+<body style="background-color:#eee;">
     <form action="/apply" method="post">
         @csrf
         <div class="my_attendance_form">
             <h3 class="my_attendance_form_title">勤怠詳細</h3>
             <table>
                 <colgroup>
-                    <col style="width: 40%;">
-                    <col style="width: 20%;">
+                    <col style="width: 35%;">
+                    <col style="width: 25%;">
                     <col style="width: 5%;">
+                    <col style="width: 25%;">
                     <col style="width: 15%;">
-                    <col style="width: 20%;">
                 </colgroup>
                 <tbody>
                     <tr style="border-top: 2px solid #eee;">
@@ -35,9 +35,22 @@
                         <th></th>
                     </tr>
                     <tr style="border-top: 2px solid #eee;">
-                        <th class="first_column_adjust">出勤・退勤</th>
+                        <th class="first_column_adjust">出勤・退勤
+ <!------------------>
+                            @if ($errors->has('job_start') && $errors->has('job_finish'))
+                            <div style="color:red;font-size:12px;">
+                                {{ $errors->first('job_start') }}
+                            </div>
+                            @elseif($errors->has('job_start') || $errors->has('job_finish'))
+                            <div style="color:red;font-size:12px;">
+                                {{ $errors->first('job_start').$errors->first('job_finish') }}
+                            </div>
+                            @endif
+                       </th>
+ <!------------------>
                         <th>
                             <input type="text" style="width:100%;border:none;text-align:center;" name="job_start" value="@if($job_start) {{ \Carbon\Carbon::parse($job_start)->format('H:i') }}@else  @endif">
+
                         </th>
                         <th>～</th>
                         <th>
@@ -48,9 +61,33 @@
                     @foreach($breakTimes as $index => $breakTime)
                     <tr style="border-top: 2px solid #eee;">
                         @if($index==0)
-                        <th class="first_column_adjust">休憩</th>
+                        <th class="first_column_adjust">休憩
+<!------------->
+                            @if ($errors->has("breakTimes.$index.break_start") && $errors->has("breakTimes.$index.break_finish"))
+                            <div style="color:red;font-size:12px;">
+                                {{ $errors->first("breakTimes.$index.break_start") }}
+                            </div>
+                            @elseif($errors->has("breakTimes.$index.break_start") || $errors->has("breakTimes.$index.break_finish"))
+                            <div style="color:red;font-size:12px;">
+                                {{ $errors->first("breakTimes.$index.break_start").$errors->first("breakTimes.$index.break_finish") }}
+                            </div>
+                            @endif
+                            </th>
+<!------------->
                         @else
-                        <th class="first_column_adjust">休憩{{ $index+1 }}</th>
+                        <th class="first_column_adjust">休憩{{ $index+1 }}
+<!-------------->
+                            @if ($errors->has("breakTimes.$index.break_start") && $errors->has("breakTimes.$index.break_finish"))
+                            <div style="color:red;font-size:12px;">
+                                {{ $errors->first("breakTimes.$index.break_start") }}
+                            </div>
+                            @elseif($errors->has("breakTimes.$index.break_start") || $errors->has("breakTimes.$index.break_finish"))
+                            <div style="color:red;font-size:12px;">
+                                {{ $errors->first("breakTimes.$index.break_start").$errors->first("breakTimes.$index.break_finish") }}
+                            </div>
+                            @endif
+                            </th>
+<!----------------->
                         @endif
                         <input type="hidden" name="breakTimes[{{ $index }}][id]" value="{{ $index+1 }}">
                         <th>
@@ -63,7 +100,6 @@
                             <input type="text" style="width:100%;border:none;text-align:center;" name="breakTimes[{{ $index }}][break_finish]" value="@if($breakTime['break_finish']){{ \Carbon\Carbon::parse($breakTime['break_finish'])->format('H:i') }}@else  @endif">
                             <input type="hidden" name="breakTimes[{{ $index }}][break_id]" value="{{ $breakTime['id'] }}">
                             <input type="hidden" name="breakTimes[{{ $index }}][job_id]" value="{{ $job_id }}">
-
                         </th>
                         <th></th>
                     </tr>
@@ -72,6 +108,9 @@
                         <th class="first_column_adjust">備考</th>
                         <th style="font-size:13px;">
                             <input type="text" style="width:200%;border:none;text-align:center;font-size:15px;" name="remark" value="{{ $remark }}">
+                            @if ($errors->has('remark'))
+                            <div style="color:red;font-size:12px;">{{ $errors->first('remark') }}</div>
+                            @endif
                         </th>
                         <th></th>
                         <th></th>

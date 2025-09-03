@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
 use Illuminate\Http\Request;
 use App\Models\User;
-
+use Illuminate\Support\Facades\Auth;
 // Fortifyのメール認証機能が有効の場合のみ処理
 if (Features::enabled(Features::emailVerification())) {
     // 認証ページの表示
@@ -34,13 +34,13 @@ if (Features::enabled(Features::emailVerification())) {
         // リンクが有効な場合
         if ($request->hasValidSignature()) {
             if (!$user->hasVerifiedEmail()) { // メールが未認証の場合のみ処理を実行
-                $user->markEmailAsVerified(); // email_verified_at フィールドを現在の日時で更新
+                $user->markEmailAsVerified(); // email_verified_atに保存
             }
-
-            return redirect()->route('staff.home')->with('success', 'メールアドレスが認証されました。'); // 成功メッセージを表示しトップページへリダイレクト
+            Auth::login($user); // ユーザーをログインさせる
+            return redirect()->route('staff.home')->with('success', 'メールアドレスが認証されました。'); //トップページへリダイレクト
         }
 
-        return redirect()->route('staff.home')->with('error', '無効なリンクです。'); // エラーメッセージを表示しホームへリダイレクト
+        return redirect()->route('staff.home')->with('error', '無効なリンクです。'); // ホームへリダイレクト
     })->middleware(['signed'])->name('verification.verify'); // 署名が有効なリンク
 
     // ------------------- 認証メールの再送信 ---------------------------
@@ -101,15 +101,15 @@ Route::get('/mail/verify/{email}', function ($email) {
 use App\Http\Controllers\MyAttendanceController;
 use App\Http\Controllers\ScheduleAdjustController;
 
+
 Route::middleware('auth')->group(function () {
 
-    /*Route::get('/', function () {
-        return view('welcome');
-    })->name('staff.home');*/
+    //-------------- staff logout ---------------------------
 
-    //});
+    Route::post('/staff/logout', [StaffController::class, 'logout'])
+        ->name('staff.logout');
 
-    // ***************** Staff Routines **************************
+    // ***************** Staff Routines ************************************
 
     // ----------------- Clock in ------------------------
 
@@ -143,110 +143,57 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AdminAttendanceController;
 use App\Http\Controllers\AdminScheduleAdjustController;
 
+
 // 管理者ログイン
 Route::get('/admin/login', function () {
     return view('auth.login_admin');
 })->name('admin.login');
 Route::post('/admin/login', [AdminController::class, 'login']);
 
-/*Route::get('/admin/home', function () {
-    return view('welcome');
-})->name('admin.home');*/
-
-//***************** 管理者登録認証  ミドルウェア　guest:admin　による **************
-//Auth:admin適用
+//************** 管理者登録認証 （ ミドルウェア　guest:admin　使用） **************
+//guest:admin適用
 Route::middleware('guest:admin')->group(function () {
 
+
     Route::get('/admin', function () {
-        return view('welcome');
+        return redirect()->route('admin.attendances');
     })->name('admin.home');
-});
 
-//---------------------　admin logout--------------------------------------
-Route::post('/admin/logout', [AdminController::class, 'logout'])
-    ->name('admin.logout');
-
-
-// ******************** Admin Routines *************************
-
-//--------------- 勤怠一覧（管理者）--------------------------
-
-Route::get('/admin/attendances', [AdminAttendanceController::class, 'getTodaysStaff'])->name('admin.attendances');
-Route::post('/admin/attendances/yesterday', [AdminAttendanceController::class, 'getYesterdaysStaff'])->name('admin.attendances/yesterday');
-Route::post('/admin/attendances/tomorrow', [AdminAttendanceController::class, 'getTomorrowsStaff'])->name('admin.attendances/tomorrow');
-
-//--------------- 勤怠詳細（管理者）----------------------------
-
-Route::get('admin/attendances/{id}', [AdminScheduleAdjustController::class, 'getMyDetail'])->name('attendance.detail');
-Route::post('/admin/apply', [AdminScheduleAdjustController::class, 'applyNewSchedule'])->name('admin.apply');
-
-//---------------- スタッフ一覧（管理者）-----------------------------
-
-Route::get('/admin/users', [AdminAttendanceController::class, 'getStaffs'])->name('admin.users');
+    //---------------------　admin logout--------------------------------------
+    Route::post('/admin/logout', [AdminController::class, 'logout'])
+        ->name('admin.logout');
 
 
+    // ******************** Admin Routines *************************
 
+    //--------------- 勤怠一覧（管理者）--------------------------
 
-/*
-//----------------- for making views ------------------
-Route::get('/clock_in', function (){
-    return view('/staff/clock_in');
-});
-Route::get('/clock_break', function (){
-    return view('/staff/clock_break');
-});
-Route::get('/clock_return', function (){
-    return view('/staff/clock_return');
-});
-Route::get('/clock_out', function (){
-    return view('/staff/clock_out');
-});
-Route::get('/my_attendance', function (){
-    return view('/staff/my_attendance');
-});
-Route::get('/my_detail', function (){
-    return view('/staff/my_detail');
-});
-Route::get('/my_detail_applied', function (){
-    return view('/staff/my_detail_applied');
-});
-Route::get('/my_applies', function (){
-    return view('/staff/my_applies');
-});
-Route::get('/todays_staffs', function (){
-    return view('/admin/todays_staffs');
-});
-Route::get('/todays_staff_detail', function (){
-    return view('/admin/todays_staff_detail');
-});
-Route::get('/staffs', function (){
-    return view('/admin/staffs');
-});
-Route::get('/staff_attendance', function (){
-    return view('/admin/staff_attendance');
-});
-Route::get('/staff_applies', function (){
-    return view('/admin/staff_applies');
-});
-Route::get('/approve', function (){
-    return view('/admin/approve');
-});
-Route::get('/approved', function (){
-    return view('/admin/approved');
-});*/
+    Route::get('/admin/attendances', [AdminAttendanceController::class, 'getTodaysStaff'])->name('admin.attendances');
+    Route::post('/admin/attendances/yesterday', [AdminAttendanceController::class, 'getYesterdaysStaff'])->name('admin.attendances/yesterday');
+    Route::post('/admin/attendances/tomorrow', [AdminAttendanceController::class, 'getTomorrowsStaff'])->name('admin.attendances/tomorrow');
 
+    //--------------- 勤怠詳細（管理者）----------------------------
 
-/*
-Route::get('/', function () {
-    return view('welcome');
+    Route::get('admin/attendances/{id}', [AdminScheduleAdjustController::class, 'getTodaysStaffDetail'])->name('attendance.detail');
+    Route::post('/admin/apply', [AdminScheduleAdjustController::class, 'applyNewSchedule'])->name('admin.apply');
+
+    //---------------- スタッフ一覧（管理者）-----------------------------
+
+    Route::get('/admin/users', [AdminAttendanceController::class, 'getStaffs'])->name('admin.users');
+
+    //---------------- スタッフ別勤怠一覧 --------------------------------
+    Route::get('/admin/users/{user}/attendances', [AdminAttendanceController::class, 'getMonthlyStaffJobs'])->name('admin.users.attendance');
+    Route::post('/admin/users/attendances/last_month', [AdminAttendanceController::class, 'showLastMonth'])->name('attendance.last_month');
+    Route::post('/admin/users/attendances/next_month', [AdminAttendanceController::class, 'showNextMonth'])->name('attendance.next_month');
+
+    //　　　　　　　　- CSV download -
+    Route::post('/admin/users/attendances/download', [AdminAttendanceController::class, 'downloadCsv'])->name('admin.users.attendance.download');
+
+    //----------------- 申請一覧（管理者） ----------------------
+    Route::get('/admin/requests', [AdminScheduleAdjustController::class, 'getStaffApplyList'])->name('admin.requests');
+
+    //----------------- 修正申請承認（管理者） ----------------------
+    Route::get('/admin/requests/{id}', [AdminScheduleAdjustController::class, 'showStaffApplyDetail'])->name('admin.requests.id');
+    Route::post('/approve', [AdminScheduleAdjustController::class, 'approveNewSchedule'])->name('approve');
 });
-Route::get('/login', function () {'
-    return view('auth.login_staff');
-});
-Route::get('/register', function () {
-    return view('auth.register_staff');
-});
-Route::get('/login_admin', function () {
-    return view('auth.login_admin');
-});
-*/
+

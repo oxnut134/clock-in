@@ -13,51 +13,133 @@ class MyAttendanceController extends Controller
 
     public function showClockIn(Request $request)
     {
-
         $currentDateTime = Carbon::now();
         // 現在の日時、曜日、時刻を取得
         $date = $currentDateTime->format('Y-m-d'); // 例: 2025年8月6日
         $dayOfWeek = $currentDateTime->format('D'); // 例: (水)
         $time = $currentDateTime->format('H:i:s'); // 時刻秒なし (例: 11:26)
 
-        return view('/staff/clock_in', [
-            'date' => $date,
-            'dayOfWeek' => $dayOfWeek,
-            'time' => $time,
-        ]);
+        // 本日の日時を取得
+        $today = Carbon::now()->format('Y-m-d');
+        $todayOriginal = $today;
+
+        // $todayOriginalの曜日取得
+        $todayCarbon = Carbon::createFromFormat('Y-m-d', $todayOriginal);
+
+        $dayOfWeekOriginal = $todayCarbon->format('D');
+
+        $user = Auth::id(); //本番ではAuth::id();となる
+
+        // 条件: user_id = Auth かつ date = 本日 のレコードが存在しない場合
+        $recordExists = Job::query()
+            ->where('user_id', $user)
+            ->where('date', $today)
+            ->exists(); // レコードが存在するか確認
+
+        if ($recordExists == true) {
+            $current_record = Job::where('user_id', $user)
+                ->where('date', $today)
+                ->first();
+            //'job_finish'に値がある場合
+            if ($current_record->job_finish != null) {
+                return view('/staff/clock_in', [
+                    'date' => $date,
+                    'dayOfWeek' => $dayOfWeek,
+                    'time' => $time,
+                ]);
+            } else {
+                $jobStart = $current_record->job_start;
+                $breakTimes = BreakTime::where('job_id', $current_record->id)->get();
+                if (is_null($jobStart)) {
+                } else {
+                    if ($breakTimes->isNotEmpty()) {
+                        foreach ($breakTimes as $breakTime) {
+                            if (is_null($breakTime->break_finish)) {
+
+                                $date = Carbon::parse($current_record->date)->format('Y年n月j日');
+                                $dayOfWeek = '(' . Carbon::parse($current_record->day_of_week)->isoFormat('ddd') . ')';
+                                $time = Carbon::parse($current_record->job_start)->format('H:i');
+
+                                return view('/staff/clock_return', [
+                                    'date' => $date,
+                                    'dayOfWeek' => $dayOfWeek,
+                                    'time' => $time,
+                                    'job_id' => $current_record->id,
+                                    'break_id' => $breakTime->id
+                                ]);
+                            }
+                        }
+
+                        $date = Carbon::parse($current_record->date)->format('Y年n月j日');
+                        $dayOfWeek = '(' . Carbon::parse($current_record->day_of_week)->isoFormat('ddd') . ')';
+                        $time = Carbon::parse($current_record->job_start)->format('H:i');
+                        return view('/staff/clock_break', [
+                            'date' => $date,
+                            'dayOfWeek' => $dayOfWeek,
+                            'time' => $time,
+                            'job_id' => $current_record->id,
+
+                        ]);
+                    } else {
+
+                        $date = Carbon::parse($current_record->date)->format('Y年n月j日');
+                        $dayOfWeek = '(' . Carbon::parse($current_record->day_of_week)->isoFormat('ddd') . ')';
+                        $time = Carbon::parse($current_record->job_start)->format('H:i');
+                        $job_id1 = $current_record->id;
+                        return view('/staff/clock_break', [
+                            'date' => $date,
+                            'dayOfWeek' => $dayOfWeek,
+                            'time' => $time,
+                            'job_id' => $job_id1,
+
+                        ]);
+                    }
+                }
+            }
+            return view('/staff/clock_in', [
+                'date' => $date,
+                'dayOfWeek' => $dayOfWeek,
+                'time' => $time,
+            ]);
+        } else {
+            return view('/staff/clock_in', [
+                'date' => $date,
+                'dayOfWeek' => $dayOfWeek,
+                'time' => $time,
+            ]);
+        }
     }
     public function putClockIn(Request $request)
     {
         // 本日の日時を取得
         $today = Carbon::now()->format('Y-m-d');
-        //$today = "2025-9-29"; //デバッグ用
+        //$today = "2025-09-05";
         $todayOriginal = $today;
 
         // $todayOriginalの曜日取得
-        //Carbonインスタンスに変換
         $todayCarbon = Carbon::createFromFormat('Y-m-d', $todayOriginal);
         // 曜日を取得
         $dayOfWeekOriginal = $todayCarbon->format('D');
 
         $user = Auth::id(); //本番ではAuth::id();となる
 
-        // 条件: user_id = 1 かつ date = 本日 のレコードが存在しない場合
-        $recordExists = Job::where('user_id', $user)
+        // 条件: user_id = Auth かつ date = 本日 のレコードが存在しない場合
+        $recordExists = Job::query()
+            ->where('user_id', $user)
             ->where('date', $today)
             ->exists(); // レコードが存在するか確認
+
         if (!$recordExists) {
             $last_record = Job::where('user_id', $user)
                 ->latest('id')->first();
-            //$Last_recordが存在するときのみ実行（レコード数<=1では実行しない）
+
+                //$Last_recordが存在するときのみ実行（レコード数<=1では実行しない）
             if ($last_record != null) {
                 $last_date = $last_record->date;
                 // $last_date を Carbon インスタンスに変換
-
                 $lastDateCarbon = Carbon::createFromFormat('Y-m-d', $last_date);
-
                 // $start_day: $last_date の1日後
                 $start_day = $lastDateCarbon->addDay()->format('Y-m-d');
-
                 // $yesterday: $today の1日前
                 $todayCarbon = Carbon::createFromFormat('Y-m-d', $today);
                 $yesterday = $todayCarbon->subDay()->format('Y-m-d');
@@ -66,7 +148,6 @@ class MyAttendanceController extends Controller
                 $startDate = Carbon::createFromFormat('Y-m-d', $start_day);
                 $endDate = Carbon::createFromFormat('Y-m-d', $yesterday);
 
-                //dd($start_day." ". $yesterday);
                 // 1日ごとにレコード追加
                 while ($startDate->lte($endDate)) {
                     // 現在の日付をフォーマット（0なし表示に）
@@ -80,7 +161,6 @@ class MyAttendanceController extends Controller
                         'day_of_week' => $dayOfWeek,
                         'job_start' => null,
                         'job_status' => null
-                        // 他の必要なカラムを追加
                     ]);
 
                     // 日付を1日進める
@@ -99,7 +179,7 @@ class MyAttendanceController extends Controller
                 // 他の必要なカラムを追加
             ]);
 
-            $current_record = Job::where('user_id', 1)
+            $current_record = Job::where('user_id', $user)
                 ->where('date', $today)
                 ->first(); // レコード取得
 
@@ -111,49 +191,75 @@ class MyAttendanceController extends Controller
                 'job_id' => $current_record->id
             ]);
         } else {
-
-            $message = "本日は退勤済みです。";
-            return view('/staff/temporary_message', [
-                'message' => '本日は退勤済みです。',
-            ]);
-
-            /*
-            $currentDateTime = Carbon::now(); //job_start時間取得用
-            // 新しいレコードを作成
-            Job::create([
-                'user_id' => $user,
-                'date' => $todayOriginal,
-                'day_of_week' => $dayOfWeekOriginal,
-                'job_start' => $currentDateTime->format('H:i:s'),
-                'job_status' => "normal"
-                // 他の必要なカラムを追加
-            ]);
-
-
-            $current_record = Job::where('user_id', 1)
+            $current_record = Job::where('user_id', $user)
                 ->where('date', $today)
-                ->first(); // レコード取得
+                ->first();
+            //'job_finish'に値がある場合
+            if ($current_record->job_finish != null) {
+                $message = "本日は退勤済みです。";
+                return view('/staff/temporary_message', [
+                    'message' => $message,
+                ]);
+                //'job_finish'に値がない場合
+            } else {
+                $jobStart = $current_record->job_start;
+                $jobFinish = $current_record->job_finish;
+                $job_id = $current_record->job_id;
+                $breakTimes = BreakTime::where('job_id', $current_record->id)->get();
 
+                if (is_null($jobStart)) {
+                    //dd('1');
+                } else
+                    if ($breakTimes->isNotEmpty()) {
+                    foreach ($breakTimes as $breakTime) {
+                        if (is_null($breakTime->break_finish)) {
+                            return view('/staff/clock_return', [
+                                'date' => $request->date,
+                                'dayOfWeek' => $request->dayOfWeek,
+                                'time' => $request->time,
+                                'job_id' => $current_record->id,
+                                'break_id' => $breakTime->id
+                            ]);
+                        }
+                        return view('/staff/clock_break', [
+                            'date' => $request->date,
+                            'dayOfWeek' => $request->dayOfWeek,
+                            'time' => $request->time,
+                            'job_id' => $current_record->id,
 
-            return view('/staff/clock_break', [
-                'date' => $request->date,
-                'dayOfWeek' => $request->dayOfWeek,
-                'time' => $request->time,
-                'job_id' => $current_record->id
+                        ]);
+                    }
+                } else {
+                    return view('/staff/clock_break', [
+                        'date' => $request->date,
+                        'dayOfWeek' => $request->dayOfWeek,
+                        'time' => $request->time,
+                        'job_id' => $current_record->id,
+
+                    ]);
+                }
+            }
+            $message = "不備なデータがあります。管理者に連絡してください。";
+            return view('/staff/temporary_message', [
+                'message' => $message,
             ]);
-            */
         }
     }
     public function putClockBreak(Request $request)
     {
-        //dd($request);
-        $currentDateTime = Carbon::now();
-        $breakTime = BreakTime::create([
-            'job_id' => $request->job_id,
-            'break_start' => $currentDateTime->format('H:i:s'),
-            'break_status' => "normal"
-        ]);
-        $break_id = $breakTime->id;
+        $job_id = $request->job_id;
+        $job = Job::find($job_id);
+        $jobStartExists = $job->job_start !== null;
+        $jobFinishExists = $job->job_finish !== null;
+        if ($job != null && $jobStartExists && !$jobFinishExists) {
+            $currentDateTime = Carbon::now();
+            $breakTime = BreakTime::create([
+                'job_id' => $request->job_id,
+                'break_start' => $currentDateTime->format('H:i:s'),
+                'break_status' => "normal"
+            ]);
+            $break_id = $breakTime->id;
+        }
 
         return view('/staff/clock_return', [
             'date' => $request->date,
@@ -165,22 +271,25 @@ class MyAttendanceController extends Controller
     }
     public function putClockReturn(Request $request)
     {
-        //dd($request);
-        $currentDateTime = Carbon::now();
-        $breakTime = BreakTime::find($request->break_id);
-        $breakTime->updateFinish($currentDateTime->format('H:i:s'));
+        $break_id = $request->break_id;
+        $break = BreakTime::find($break_id);
+        $breakStartExists = $break->break_start !== null;
+        $breakFinishExists = $break->break_finish !== null;
+        if ($break != null && $breakStartExists && !$breakFinishExists) {
+            $currentDateTime = Carbon::now();
+            $breakTime = BreakTime::find($request->break_id);
+            $breakTime->updateFinish($currentDateTime->format('H:i:s'));
+            return view('/staff/clock_break', [
+                'date' => $request->date,
+                'dayOfWeek' => $request->dayOfWeek,
+                'time' => $request->time,
+                'job_id' => $request->job_id,
 
-        return view('/staff/clock_break', [
-            'date' => $request->date,
-            'dayOfWeek' => $request->dayOfWeek,
-            'time' => $request->time,
-            'job_id' => $request->job_id,
-
-        ]);
+            ]);
+        }
     }
     public function putClockOut(Request $request)
     {
-        //dd($request);
         $currentDateTime = Carbon::now();
         $job = Job::find($request->job_id);
         $job->updateFinish($currentDateTime->format('H:i:s'));
@@ -196,43 +305,39 @@ class MyAttendanceController extends Controller
         $auth_id = Auth::id(); //本番はAuth::id();
 
         $currentDateTime = session('currentDateTime');
-        //dd($currentDateTime);
         if ($currentDateTime ==  null) {
             $currentDateTime = Carbon::now();
         }
         $thisYearMonth = $currentDateTime->format('Y-m');
 
         $jobs = Job::with('breakTime')
-            ->where('user_id', $auth_id) //本番はAuth::id();
+            ->where('user_id', $auth_id)
             ->where('date', 'LIKE', $thisYearMonth . '%')
             ->get();
-        //dd($jobs);
         foreach ($jobs as $job) {
-            //            if ($job->break_duration == 0 || $job->job_duration == 0) {
-            //dd($job);
+
             $breakDuration = 0;
             foreach ($job->breakTime as $break) {
 
-                //$breakTime = BreakTime::find($break->id);
                 $breakDuration += $break->calculateDuration();
             }
             $job = Job::find($job->id);
             $jobDuration = $job->calculateDuration() - $breakDuration;
+            if ($jobDuration < 0) {
+                $jobDuration = 0;
+            }
 
             $job->break_duration = $breakDuration;
             $job->job_duration = $jobDuration;
-            //dd($jobDuration . " " . $breakDuration);
             $job->save();
 
             // 最新のデータを再取得 viewの表示遅れ防止
             $jobs = Job::with('breakTime')
-                ->where('user_id', $auth_id)//本番はAuth::id();
+                ->where('user_id', $auth_id) //本番はAuth::id();
                 ->where('date', 'LIKE', $thisYearMonth . '%')
                 ->get();
         }
-
         $thisYearMonth = $currentDateTime->format('Y-m');
-        //dd($thisYearMonth);
         return view('/staff/my_attendance', [
             'this_year_month' => $thisYearMonth,
             'jobs' => $jobs,
@@ -245,14 +350,12 @@ class MyAttendanceController extends Controller
     {
         $currentDateTime = $request->currentDateTime;
         $lastMonth = Carbon::parse($currentDateTime)->subMonth(); //前月
-        //dd($lastMonth);
         return redirect()->route('attendance.list')->with(['currentDateTime' => $lastMonth]);
     }
     public function ShowNextMonth(Request $request)
     {
         $currentDateTime = $request->currentDateTime;
         $nextMonth = Carbon::parse($currentDateTime)->addMonth(); //翌月
-        //dd($lastMonth);
         return redirect()->route('attendance.list')->with(['currentDateTime' => $nextMonth]);
     }
 }
