@@ -206,13 +206,13 @@ DB_PASSWORD=root
 
 ### APP_KEY 作成
 
+### テスト用テーブルのマイグレーション
+
 ```
 コピー
 php artisan key:generate --env=testing
 php artisan config:clear
 ```
-
-### テスト用テーブルのマイグレーション
 
 ```
 php artisan migrate --env=testing
@@ -271,3 +271,6 @@ image.png
 - **Mailhog**: [https://gitub.com/mailhog/MailHog](https://github.com/mailhog/MailHog)
 
 # 5）追記事項
+
+①勤怠登録画面（出勤前）で出勤ボタンをクリックした際に、前回の出勤から日が空いている場合
+　には、休みとみなし、空いている日付分のレコードが日付情報のみで作成されます。
