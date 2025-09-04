@@ -77,47 +77,15 @@ class AdminGetStaffInformationTest extends TestCase
             'email_verified_at' => now(),
 
         ]);
-        /*        $users = User::all();
-        foreach ($users as $user) {
-            for ($i = 0; $i < 100; $i++) { // X日分のデータを生成
-                $date = Carbon::create(Carbon::now()->year, 7, 1)->addDays($i); // 現在の年のm月d日からの日付で取得
-                DB::table('jobs')->insert([
-                    'user_id' => $user->id, //rand(1, 4),\\\
-                    'date' => $date->format('Y-m-d'),
-                    'day_of_week' => $date->format('D'),
-                    'job_start' => Carbon::createFromTime(rand(8, 8), rand(30, 59))->format('H:i:s'), // ランダムな出勤時間
-                    'job_finish' => Carbon::createFromTime(rand(18, 18), rand(0, 30))->format('H:i:s'), // ランダムな退勤時間
-                    'job_status' => "normal",
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]);
-            }
-            $jobs = Job::where('user_id', $user->id)->get();
-            foreach ($jobs as $job) { //Jobのレコード数分繰り返し
-                DB::table('breaks')->insert([
-                    'job_id' => $job->id, //+ 1,
-                    'break_start' => Carbon::createFromTime(12, rand(0, 0))->format('H:i:s'), // ランダムな出勤時間
-                    'break_finish' => Carbon::createFromTime(13, rand(0, 0))->format('H:i:s'), // ランダムな退勤時間
-                    'break_status' => "normal",
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]);
-                $r = rand(1, 5); //5回に1回2レコード目のbreakを生成
-                if ($r == 6) {               //if内実行せず（２回目の休憩レコードなしで固定）
-                    DB::table('breaks')->insert([
-                        'job_id' => $job->id,
-                        'break_start' => Carbon::createFromTime(13, rand(0, 0))->format('H:i:s'), // ランダムな出勤時間
-                        'break_finish' => Carbon::createFromTime(13, rand(30, 30))->format('H:i:s'), // ランダムな退勤時間
-                        'break_status' => "normal",
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ]);
-                }
-            }
-        }*/
+
+
+        $user->save();
+
+        //------------ Jobs and breaks(BreakTime)  ----------------------
+
         $users = User::all();
-        foreach ($users as $user) {
-            for ($i = 0; $i < 100; $i++) { // X日分のデータを生成
+        for ($i = 0; $i < 100; $i++) { // X日分のデータを生成
+            foreach ($users as $user) {
                 $random = Rand(1, 10);
                 switch ($random) {
                     case 2:
@@ -153,7 +121,7 @@ class AdminGetStaffInformationTest extends TestCase
                     ]);
                 }
             }
-            $jobs = Job::where('user_id', $user->id)->get();
+            $jobs = Job::where('date',  $date->format('Y-m-d'))->get();
             foreach ($jobs as $job) { //Jobのレコード数分繰り返し
                 if ($job->job_start != null) {
                     DB::table('breaks')->insert([
@@ -397,20 +365,21 @@ class AdminGetStaffInformationTest extends TestCase
             ->where('date', 'LIKE', $thisYearMonth . '%')
             ->inRandomOrder() //randomに並べ替え
             ->first();
-
         $response = $this->get('/admin/attendances/' . $job->id);
 
         $response->assertSee('勤怠詳細');
         $response->assertSee($job->user->name);
 
-
         $response->assertSee(Carbon::parse($job->date)->format('Y年'));
         $response->assertSee(Carbon::parse($job->date)->format('n月j日'));
-        $response->assertSee(Carbon::parse($job->job_start)->format('H:i'));
-        $response->assertSee(Carbon::parse($job->job_finish)->format('H:i'));
-        foreach ($job->breakTime as $break) {
-            $response->assertSee(Carbon::parse($break->break_start)->format('H:i'));
-            $response->assertSee(Carbon::parse($break->break_finish)->format('H:i'));
+        if ($job->job_start != null) {
+            $response->assertSee(Carbon::parse($job->job_start)->format('H:i'));
+
+            $response->assertSee(Carbon::parse($job->job_finish)->format('H:i'));
+            foreach ($job->breakTime as $break) {
+                $response->assertSee(Carbon::parse($break->break_start)->format('H:i'));
+                $response->assertSee(Carbon::parse($break->break_finish)->format('H:i'));
+            }
         }
     }
 }

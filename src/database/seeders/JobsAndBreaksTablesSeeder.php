@@ -26,8 +26,8 @@ class JobsAndBreaksTablesSeeder extends Seeder
         //------------ Jobs and breaks(BreakTime)  ----------------------
 
         $users = User::all();
-        foreach ($users as $user) {
-            for ($i = 0; $i < 100; $i++) { // X日分のデータを生成
+        for ($i = 0; $i < 100; $i++) { // X日分のデータを生成
+            foreach ($users as $user) {
                 $random = Rand(1, 10);
                 switch ($random) {
                     case 2:
@@ -63,7 +63,7 @@ class JobsAndBreaksTablesSeeder extends Seeder
                     ]);
                 }
             }
-            $jobs = Job::where('user_id', $user->id)->get();
+            $jobs = Job::where('date',  $date->format('Y-m-d'))->get();
             foreach ($jobs as $job) { //Jobのレコード数分繰り返し
                 if ($job->job_start != null) {
                     DB::table('breaks')->insert([
