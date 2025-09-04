@@ -56,7 +56,7 @@ composer create-project "laravel/laravel=8.*" . --prefer-dist
 
 ### APP_KEY作成
 
-`php artisan key:generate`
+`php artisan key:generate` 
 
 ### Laravel起動確認
 
@@ -106,6 +106,10 @@ DB_PASSWORD=laravel_pass
 
 ```
 
+```
+docker-compose up -d --build
+```
+
 ### 1-3 マイグレーション
 
 ### マイグレーション実行
@@ -140,13 +144,17 @@ php artisan db:seed
 
 実行されるのは以下の３シーダーです。
 
-- **UsersTableSeeder**
-- **AdminsTableSeeder**
-- **JobsAndBreaksTableSeeder**※１
+- **UsersTableSeeder**※１
+- **AdminsTableSeede**r※1
+- **JobsAndBreaksTableSeeder**※２
 
- **** 　※１　jobsテーブルとbreaksテーブルへのシーディングが一度で行えます。
+  ****※１   passwordはユーザー、管理者ともabc12345となっております。
+
+  ※２　jobsテーブルとbreaksテーブルへのシーディングが一度で行えます。
+   
 
 　  ****※UsersTableSeeder、AdminsTableSeederはそれぞれの単体シーディング用
+      
 
 ---
 
@@ -169,6 +177,13 @@ MAIL_FROM_NAME="${APP_NAME}"
 ---
 
 ### 1-6 テストコード
+
+### データベース作成
+
+```
+ー 略 ー
+mysql>create clock_in;
+```
 
 ### /config/database.php追記
 
@@ -274,3 +289,5 @@ image.png
 
 ①勤怠登録画面（出勤前）で出勤ボタンをクリックした際に、前回の出勤から日が空いている場合
 　には、休みとみなし、空いている日付分のレコードが日付情報のみで作成されます。
+
+②seedingデータのpasswordはユーザー、管理者ともabc12345になっております。
