@@ -221,13 +221,11 @@ DB_PASSWORD=root
 
 ### APP_KEY 作成
 
-### テスト用テーブルのマイグレーション
-
 ```
-コピー
 php artisan key:generate --env=testing
-php artisan config:clear
 ```
+
+### テスト用テーブルのマイグレーション
 
 ```
 php artisan migrate --env=testing
@@ -275,9 +273,9 @@ php artisan test
 
 image.png
 
----
-
 ![clockIn.png](clockIn.png)
+
+---
 
 # 4）URL
 
