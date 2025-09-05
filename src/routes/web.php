@@ -132,7 +132,7 @@ Route::middleware('auth')->group(function () {
 
     //-------------- 申請一覧　-----------------------
 
-    Route::get('/stamp_correction_request/list/{param}', [ScheduleAdjustController::class, 'getMytApplyList'])->name('stamp_correction_request.list');
+    Route::get('/stamp_correction_request/list/{param}', [ScheduleAdjustController::class, 'getMyApplyList'])->name('stamp_correction_request.list');
 });
 
 

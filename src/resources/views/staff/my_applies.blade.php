@@ -51,14 +51,14 @@
                 @php
                 //dd($job['updated_at']);
                 $job['date'] = Carbon::parse($job['date'])->format('Y/m/d');
-                $updatedAt = $job['updated_at']->format('Y/m/d');
+                $job['apply_date'] = Carbon::parse($job['apply_date'])->format('Y/m/d');
                 @endphp
                 <tr style="border-top: 2px solid #eee;">
                     <td>{{ $status }}</td>
                     <td>{{ $user['name'] }}</td>
                     <td>{{ $job['date'] }}</td>
                     <td>{{ $job['remark'] }}</td>
-                    <td>{{ $updatedAt }}</td>
+                    <td>{{ $job['apply_date'] }}</td>
                     <td>
                         <form action="/attendance/detail/{{ $job['id'] }}" method="get">
                             <button>詳細</button>

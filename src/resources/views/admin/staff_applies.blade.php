@@ -52,14 +52,14 @@
                 @foreach($jobs as $job)
                 @php
                 $job['date'] = Carbon::parse($job['date'])->format('Y/m/d');
-                $updatedAt = $job['updated_at']->format('Y/m/d');
-                @endphp
+                $job['apply_date'] = Carbon::parse($job['apply_date'])->format('Y/m/d');
+               @endphp
                 <tr style="border-top: 2px solid #eee;">
                     <td>{{ $status }}</td>
                     <td>{{ $job->user['name'] }}</td>
                     <td>{{ $job['date'] }}</td>
                     <td>{{ $job['remark'] }}</td>
-                    <td>{{ $updatedAt }}</td>
+                    <td>{{ $job['apply_date'] }}</td>
                     <td>
                         <form action="/admin/requests/{{ $job['id'] }}" method="get">
                             <button>詳細</button>

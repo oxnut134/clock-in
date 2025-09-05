@@ -80,9 +80,11 @@ class AdminScheduleAdjustController extends Controller
             }
         }
 
-        // 変更あればjob_statusをapplied
-        if ($hasChanges) {
+        // 変更あればjob_statusをapplied,apply_dateを本日
+        if ($hasChanges ) {
             $job->updateStatus("applied");
+            $job->apply_date =Carbon::now()->format('Y-m-d');
+            $job->save();
         }
 
         $breakTimes = $request->breakTimes;

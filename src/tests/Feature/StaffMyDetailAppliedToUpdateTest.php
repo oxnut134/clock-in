@@ -48,25 +48,27 @@ class StaffMyDetailAppliedToUpdateTest extends TestCase
 
 
         $user->save();
-
-    //------------ Jobs and breaks(BreakTime)  ----------------------
+        //------------ Jobs and breaks(BreakTime)  ----------------------
 
         $users = User::all();
         for ($i = 0; $i < 100; $i++) { // X日分のデータを生成
+            $date = Carbon::create(Carbon::now()->year, 7, 1)->addDays($i); // 現在の年のm月d日からの日付で取得
             foreach ($users as $user) {
                 $random = Rand(1, 10);
                 switch ($random) {
                     case 2:
                         $job_status = "applied";
+                        $apply_date = $date;
                         break;
                     case 4:
                         $job_status = "approved";
+                        $apply_date = $date;
                         break;
                     default:
                         $job_status = "normal";
+                        $apply_date = null;
                         break;
                 }
-                $date = Carbon::create(Carbon::now()->year, 7, 1)->addDays($i); // 現在の年のm月d日からの日付で取得
                 if ($date->format('D') != "Sun") {
                     DB::table('jobs')->insert([
                         'user_id' => $user->id, //rand(1, 4),\\\
@@ -75,6 +77,7 @@ class StaffMyDetailAppliedToUpdateTest extends TestCase
                         'job_start' => Carbon::createFromTime(rand(8, 8), rand(30, 59))->format('H:i:s'), // ランダムな出勤時間
                         'job_finish' => Carbon::createFromTime(rand(18, 18), rand(0, 30))->format('H:i:s'), // ランダムな退勤時間
                         'job_status' => $job_status,
+                        'apply_date' => $apply_date,
                         'created_at' => now(),
                         'updated_at' => now(),
                     ]);
@@ -370,7 +373,7 @@ class StaffMyDetailAppliedToUpdateTest extends TestCase
         $response->assertSee($appliedJob->user->name);
         $response->assertSee(Carbon::parse($appliedJob->date)->format('Y/m/d'));
         $response->assertSee($appliedJob->remark);
-        $response->assertSee(Carbon::parse($appliedJob->updated_at)->format('Y/m/d'));
+        $response->assertSee(Carbon::parse($appliedJob->apply_date)->format('Y/m/d'));
         $this->assertEquals('applied', $job->job_status);
 
         //修正申請表示確認
@@ -462,7 +465,7 @@ class StaffMyDetailAppliedToUpdateTest extends TestCase
             $response->assertSee($appliedJob->user->name);
             $response->assertSee(Carbon::parse($appliedJob->date)->format('Y/m/d'));
             $response->assertSee($appliedJob->remark);
-            $response->assertSee(Carbon::parse($appliedJob->updated_at)->format('Y/m/d'));
+            $response->assertSee(Carbon::parse($appliedJob->apply_date)->format('Y/m/d'));
             $this->assertEquals('applied', $job->job_status);
         }
         $response = $this->post('/staff/logout');
@@ -550,7 +553,7 @@ class StaffMyDetailAppliedToUpdateTest extends TestCase
             $response->assertSee($appliedJob->user->name);
             $response->assertSee(Carbon::parse($appliedJob->date)->format('Y/m/d'));
             $response->assertSee($appliedJob->remark);
-            $response->assertSee(Carbon::parse($appliedJob->updated_at)->format('Y/m/d'));
+            $response->assertSee(Carbon::parse($appliedJob->apply_date)->format('Y/m/d'));
             $this->assertEquals('applied', $appliedJob->job_status);
 
             //管理者承認
@@ -567,7 +570,7 @@ class StaffMyDetailAppliedToUpdateTest extends TestCase
             $response->assertSee($appliedJob->user->name);
             $response->assertSee(Carbon::parse($appliedJob->date)->format('Y/m/d'));
             $response->assertSee($appliedJob->remark);
-            $response->assertSee(Carbon::parse($appliedJob->updated_at)->format('Y/m/d'));
+            $response->assertSee(Carbon::parse($appliedJob->apply_date)->format('Y/m/d'));
 
             $approvedJobs = Job::with(['breakTime', 'user'])
                 ->where('user_id', $job->user_id)

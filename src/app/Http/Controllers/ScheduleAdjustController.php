@@ -74,12 +74,12 @@ class ScheduleAdjustController extends Controller
             }
         }
 
-        // 変更あればjob_statusをapplied
+        // 変更あればjob_statusをapplied,apply_dateを本日
         if ($hasChanges ) {
             $job->updateStatus("applied");
+            $job->apply_date =Carbon::now()->format('Y-m-d');
+            $job->save();
         }
-
-
 
         $breakTimes = $request->breakTimes;
         if ($breakTimes != null) {
@@ -126,7 +126,7 @@ class ScheduleAdjustController extends Controller
         }
         return redirect()->route('attendance.list');
     }
-    public function getMytApplyList($param)
+    public function getMyApplyList($param)
     {
         $auth_id = Auth::id();
         $user = User::find($auth_id);
@@ -143,7 +143,7 @@ class ScheduleAdjustController extends Controller
             case 'approved':
                 $approvedJobs = Job::where('user_id', $auth_id)
                     ->where('job_status', "approved")->get();
-                return view('/staff/my_applies', [
+                    return view('/staff/my_applies', [
                     'jobs' => $approvedJobs,
                     'user' => $user,
                     'status' => "承認済み"
