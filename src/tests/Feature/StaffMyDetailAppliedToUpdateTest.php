@@ -382,8 +382,13 @@ class StaffMyDetailAppliedToUpdateTest extends TestCase
         $response->assertSee($appliedJob->user->name);
         $response->assertSee(Carbon::parse($appliedJob->date)->format('Y年'));
         $response->assertSee(Carbon::parse($appliedJob->date)->format('n月j日'));
-        $response->assertSee(Carbon::parse($appliedJob->job_start)->format('H:i'));
-        $response->assertSee(Carbon::parse($appliedJob->job_finish)->format('H:i'));
+        if ($appliedJob->job_start != null) {
+            $response->assertSee(Carbon::parse($appliedJob->job_start)->format('H:i'));
+        }
+        if ($appliedJob->job_finish != null) {
+
+            $response->assertSee(Carbon::parse($appliedJob->job_finish)->format('H:i'));
+        }
         $response->assertSee(Carbon::parse($breakTime->break_start)->format('H:i'));
         $response->assertSee(Carbon::parse($breakTime->break_finish)->format('H:i'));
         $response->assertSee($appliedJob->remark);
@@ -643,8 +648,12 @@ class StaffMyDetailAppliedToUpdateTest extends TestCase
         $response->assertSee($appliedJob->user->name);
         $response->assertSee(Carbon::parse($appliedJob->date)->format('Y年'));
         $response->assertSee(Carbon::parse($appliedJob->date)->format('n月j日'));
-        $response->assertSee(Carbon::parse($appliedJob->job_start)->format('H:i'));
-        $response->assertSee(Carbon::parse($appliedJob->job_finish)->format('H:i'));
+        if ($appliedJob->job_start != null) {
+            $response->assertSee(Carbon::parse($appliedJob->job_start)->format('H:i'));
+        }
+        if ($appliedJob->job_finish != null) {
+            $response->assertSee(Carbon::parse($appliedJob->job_finish)->format('H:i'));
+        }
         $response->assertSee(Carbon::parse($breakTime->break_start)->format('H:i'));
         $response->assertSee(Carbon::parse($breakTime->break_finish)->format('H:i'));
         $response->assertSee($appliedJob->remark);

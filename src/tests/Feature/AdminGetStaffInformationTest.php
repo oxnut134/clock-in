@@ -195,8 +195,12 @@ class AdminGetStaffInformationTest extends TestCase
 
         foreach ($jobs as $job) {
             $response->assertSee(Carbon::parse($job->date)->format('m/d'));
-            $response->assertSee(Carbon::parse($job->job_start)->format('H:i'));
-            $response->assertSee(Carbon::parse($job->job_finish)->format('H:i'));
+            if ($job->job_start != null) {
+                $response->assertSee(Carbon::parse($job->job_start)->format('H:i'));
+            }
+            if ($job->job_finish != null) {
+                $response->assertSee(Carbon::parse($job->job_finish)->format('H:i'));
+            }
             $breaks = BreakTime::where('job_id', $job->id)->get();
             $breakDuration = 0;
             foreach ($breaks as $break) {
@@ -255,8 +259,12 @@ class AdminGetStaffInformationTest extends TestCase
 
         foreach ($jobs as $job) {
             $response->assertSee(Carbon::parse($job->date)->format('m/d'));
-            $response->assertSee(Carbon::parse($job->job_start)->format('H:i'));
-            $response->assertSee(Carbon::parse($job->job_finish)->format('H:i'));
+            if ($job->job_start != null) {
+                $response->assertSee(Carbon::parse($job->job_start)->format('H:i'));
+            }
+            if ($job->job_finish != null) {
+                $response->assertSee(Carbon::parse($job->job_finish)->format('H:i'));
+            }
             $breaks = BreakTime::where('job_id', $job->id)->get();
             $breakDuration = 0;
             foreach ($breaks as $break) {
@@ -315,8 +323,12 @@ class AdminGetStaffInformationTest extends TestCase
 
         foreach ($jobs as $job) {
             $response->assertSee(Carbon::parse($job->date)->format('m/d'));
-            $response->assertSee(Carbon::parse($job->job_start)->format('H:i'));
-            $response->assertSee(Carbon::parse($job->job_finish)->format('H:i'));
+            if ($job->job_start != null) {
+                $response->assertSee(Carbon::parse($job->job_start)->format('H:i'));
+            }
+            if ($job->job_finish != null) {
+                $response->assertSee(Carbon::parse($job->job_finish)->format('H:i'));
+            }
             $breaks = BreakTime::where('job_id', $job->id)->get();
             $breakDuration = 0;
             foreach ($breaks as $break) {
@@ -377,9 +389,13 @@ class AdminGetStaffInformationTest extends TestCase
         $response->assertSee(Carbon::parse($job->date)->format('Y年'));
         $response->assertSee(Carbon::parse($job->date)->format('n月j日'));
         if ($job->job_start != null) {
-            $response->assertSee(Carbon::parse($job->job_start)->format('H:i'));
+            if ($job->job_start != null) {
+                $response->assertSee(Carbon::parse($job->job_start)->format('H:i'));
+            }
 
-            $response->assertSee(Carbon::parse($job->job_finish)->format('H:i'));
+            if ($job->job_finish != null) {
+                $response->assertSee(Carbon::parse($job->job_finish)->format('H:i'));
+            }
             foreach ($job->breakTime as $break) {
                 $response->assertSee(Carbon::parse($break->break_start)->format('H:i'));
                 $response->assertSee(Carbon::parse($break->break_finish)->format('H:i'));

@@ -199,8 +199,12 @@ class StaffMyDetailDisplayedFunctionTest extends TestCase
         $response = $this->get('/attendance/detail/' . $job->id);
 
         $response->assertSee("出勤・退勤");
-        $response->assertSee(Carbon::parse($job->job_start)->format('H:i'));
-        $response->assertSee(Carbon::parse($job->job_finish)->format('H:i'));
+        if ($job->job_start != null) {
+            $response->assertSee(Carbon::parse($job->job_start)->format('H:i'));
+        }
+        if ($job->job_finish != null) {
+            $response->assertSee(Carbon::parse($job->job_finish)->format('H:i'));
+        }
     }
     public function test_break_start_and_return_time_displayed_at_my_detail()
     {

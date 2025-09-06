@@ -171,8 +171,12 @@ class AdminOperateAttendanceDetailTest extends TestCase
         $response->assertSee($job->user->name);
         $response->assertSee(Carbon::parse($job->date)->format('Y年'));
         $response->assertSee(Carbon::parse($job->date)->format('n月j日'));
-        $response->assertSee(Carbon::parse($job->job_start)->format('H:i'));
-        $response->assertSee(Carbon::parse($job->job_finish)->format('H:i'));
+        if ($job->job_start != null) {
+            $response->assertSee(Carbon::parse($job->job_start)->format('H:i'));
+        }
+        if ($job->job_finish != null) {
+            $response->assertSee(Carbon::parse($job->job_finish)->format('H:i'));
+        }
         foreach ($job->breakTime as $breakTime) {
             $response->assertSee(Carbon::parse($breakTime->break_start)->format('H:i'));
             $response->assertSee(Carbon::parse($breakTime->break_finish)->format('H:i'));

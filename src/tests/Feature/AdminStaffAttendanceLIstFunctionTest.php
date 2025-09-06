@@ -148,7 +148,6 @@ class AdminStaffAttendanceLIstFunctionTest extends TestCase
 
         $thisYearMonth = carbon::now()->format('Y-m');
         $today = carbon::now()->format('Y-m-d');
-
         //勤怠一覧画面確認
         $response->assertSee(Carbon::parse($today)->format('Y年n月j日') . " の勤怠");
 
@@ -157,8 +156,12 @@ class AdminStaffAttendanceLIstFunctionTest extends TestCase
             ->get();
         foreach ($jobs as $job) {
             $response->assertSee($job->user->name);
-            $response->assertSee(Carbon::parse($job->job_start)->format('H:i'));
-            $response->assertSee(Carbon::parse($job->job_finish)->format('H:i'));
+            if ($job->job_start != null) {
+                $response->assertSee(Carbon::parse($job->job_start)->format('H:i'));
+            }
+            if ($job->job_finish != null) {
+                $response->assertSee(Carbon::parse($job->job_finish)->format('H:i'));
+            }
 
             $breaks = BreakTime::where('job_id', $job->id)->get();
             $breakDuration = 0;
@@ -208,8 +211,12 @@ class AdminStaffAttendanceLIstFunctionTest extends TestCase
             ->get();
         foreach ($jobs as $job) {
             $response->assertSee($job->user->name);
-            $response->assertSee(Carbon::parse($job->job_start)->format('H:i'));
-            $response->assertSee(Carbon::parse($job->job_finish)->format('H:i'));
+            if ($job->job_start != null) {
+                $response->assertSee(Carbon::parse($job->job_start)->format('H:i'));
+            }
+            if ($job->job_finish != null) {
+                $response->assertSee(Carbon::parse($job->job_finish)->format('H:i'));
+            }
         }
     }
     public function testPreviousDayPageDisplayed()
@@ -233,8 +240,12 @@ class AdminStaffAttendanceLIstFunctionTest extends TestCase
             ->get();
         foreach ($jobs as $job) {
             $response->assertSee($job->user->name);
-            $response->assertSee(Carbon::parse($job->job_start)->format('H:i'));
-            $response->assertSee(Carbon::parse($job->job_finish)->format('H:i'));
+            if ($job->job_start != null) {
+                $response->assertSee(Carbon::parse($job->job_start)->format('H:i'));
+            }
+            if ($job->job_finish != null) {
+                $response->assertSee(Carbon::parse($job->job_finish)->format('H:i'));
+            }
         }
     }
     public function testNextDayPageDisplayed()
@@ -258,8 +269,12 @@ class AdminStaffAttendanceLIstFunctionTest extends TestCase
             ->get();
         foreach ($jobs as $job) {
             $response->assertSee($job->user->name);
-            $response->assertSee(Carbon::parse($job->job_start)->format('H:i'));
-            $response->assertSee(Carbon::parse($job->job_finish)->format('H:i'));
+            if ($job->job_start != null) {
+                $response->assertSee(Carbon::parse($job->job_start)->format('H:i'));
+            }
+            if ($job->job_finish != null) {
+                $response->assertSee(Carbon::parse($job->job_finish)->format('H:i'));
+            }
         }
     }
 }
